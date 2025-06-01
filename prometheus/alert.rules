@@ -1,0 +1,62 @@
+groups:
+- name: example
+  rules:
+    # Cảnh báo khi dịch vụ không phản hồi trong 2 phút
+    - alert: ServiceDown
+      expr: up == 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Instance {{ $labels.instance }} down"
+        description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 2 minutes."
+
+    # Cảnh báo khi tải hệ thống cao (node_load1 > 0.5)
+    - alert: HighSystemLoad
+      expr: node_load1 > 0.5
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Instance {{ $labels.instance }} under high load"
+        description: "{{ $labels.instance }} of job {{ $labels.job }} is under high load."
+
+    # Cảnh báo khi CPU sử dụng trên 80%
+    - alert: HighCpuUsage
+      expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High CPU usage on {{ $labels.instance }}"
+        description: "CPU usage is above 80% on {{ $labels.instance }} for the last 5 minutes."
+
+    # Cảnh báo khi RAM sử dụng trên 90%
+    - alert: HighMemoryUsage
+      expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 90
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High Memory usage on {{ $labels.instance }}"
+        description: "Memory usage is above 90% on {{ $labels.instance }} for the last 5 minutes."
+
+    # Cảnh báo khi Disk sử dụng trên 85%
+    - alert: HighDiskUsage
+      expr: 100 * (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes > 85
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High Disk usage on {{ $labels.instance }}"
+        description: "Disk usage is above 85% on {{ $labels.instance }} for the last 5 minutes."
+
+    # Cảnh báo khi Network có lỗi (tùy chỉnh nếu bạn có metrics network)
+    - alert: HighNetworkErrorRate
+      expr: rate(node_network_receive_errs_total[5m]) + rate(node_network_transmit_errs_total[5m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High Network error rate on {{ $labels.instance }}"
+        description: "Network error rate is high on {{ $labels.instance }} for the last 5 minutes."
